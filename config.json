@@ -1,0 +1,22 @@
+{
+    "trainingData": "datasetV1.json",
+    "populationSize": 100,
+    "networkInputs": 5,
+    "networkOutputs": 1,
+    "initHiddenNodes": 0,
+    "initConnections": 5,
+    "outputActivationFunction": "sigmoid",
+    "higherIsBetter": true,
+    "forceNewNodeConnections": false,
+    "nodeMutationRate": 0.01,
+    "nodeMutationDecay": 0.01,
+    "connectionMutationRate": 0.8,
+    "connectionMutationDecay": 0.8,
+    "weightMutationRate": 0.1,
+    "weightMutationDecay": 0.01,
+    "biasMutationRate": 0.1,
+    "biasMutationDecay": 0.01,
+    "saveProgress": true,
+    "loadFromSave": false,
+    "savePopulationProgress": false
+}
