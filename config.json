@@ -1,6 +1,7 @@
 {
     "trainingData": "datasetV1.json",
     "populationSize": 100,
+    "generations": 100,
     "networkInputs": 5,
     "networkOutputs": 1,
     "initHiddenNodes": 0,
