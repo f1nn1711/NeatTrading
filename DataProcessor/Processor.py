@@ -25,7 +25,8 @@ class Processor:
             chunkSize: int = 25,
             forwardPoints: int = 3,
             output: str = 'output.json',
-            testTrainSplit: float = 0.05  # Meaning 5% is allocated for testing
+            testTrainSplit: float = 0.05,  # Meaning 5% is allocated for testing,
+            priceField: str = 'close'
     ) -> None:
         tickers = tickers.split(',')
 
@@ -51,7 +52,8 @@ class Processor:
         XData = []
         yData = []
         for datapoint in chunkedData:
-            XData.append(datapoint[:(len(datapoint) - forwardPoints)])
+            scaledData = scaleValues(pluck(datapoint[:(len(datapoint) - forwardPoints)], 'close'))
+            XData.append(scaledData)
             yData.append(self.getCorrectOutput(datapoint[-(forwardPoints + 1):]))
 
         splitPoint = round(len(XData) * testTrainSplit)
@@ -86,9 +88,14 @@ class ProcessorV1(Processor):
         :param outputData:
         :return:
         """
+        priceValues = outputData
+        if isinstance(outputData[0], dict):
+            priceValues = pluck(outputData, self.priceField)
 
-        priceValues = pluck(outputData, self.priceField)
-        changeOverPeriod = getChange(priceValues[0], priceValues[-1])
+        try:
+            changeOverPeriod = getChange(priceValues[0], priceValues[-1])
+        except ZeroDivisionError:
+            changeOverPeriod = self.cutoffPercent + 1
 
         outputData = [0 for _ in range(3)]
 
