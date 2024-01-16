@@ -48,6 +48,9 @@ class NEAT:
 
             self.population.append(newAgent)
 
+    def getPopulation(self) -> list:
+        return self.population
+
     def generatePool(self):
         agentsDict = []
 
@@ -90,8 +93,7 @@ class NEAT:
 
         newGeneration = []
 
-        # print(len(pool))
-        for n in range(self.size):
+        for n in range(self.populationSize):
             newGeneration.append(copy.deepcopy(random.choice(pool)))
 
             if random.random() < self.config['nodeMutationRate'] * (
