@@ -9,6 +9,14 @@ def scaleValues(inputList: list, scaleFrom: int|float = 0, scaleTo: int|float = 
     return list(map(lambda value: (((value-minValue)/(maxValue-minValue))*(scaleTo-scaleFrom))+scaleFrom, inputList))
 
 
+def argMax(inputList: list):
+    return inputList.index(max(inputList))
+
+
+def argMin(inputList: list):
+    return inputList.index(min(inputList))
+
+
 if __name__ == '__main__':
     print(scaleValues([0,1,2,3,4]))
 

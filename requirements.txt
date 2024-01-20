@@ -6,6 +6,8 @@ django-rest-framework==0.1.0
 djangorestframework==3.14.0
 idna==3.6
 mysqlclient==2.2.0
+neat-python==0.92
+numpy==1.26.3
 pygame==2.5.2
 python-dotenv==1.0.0
 pytz==2023.3.post1

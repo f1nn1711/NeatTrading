@@ -83,6 +83,9 @@ class NEAT:
             for c in range(n + 1):
                 pool.append(agent['agent'])
 
+            if n == len(agentsDict) - 1:
+                print(f'Best fitness: {agent["fitness"]}')
+
         return pool
 
     def saveAgent(self, agent):

@@ -22,7 +22,10 @@ class Agent:
         return self.neuralNetwork.addConnection(startNode, endNode)
 
     def getNetworkResponse(self, inputs):
-        return self.neuralNetwork.run(inputs)
+        try:
+            return self.neuralNetwork.run(inputs)
+        except KeyboardInterrupt:
+            return self.neuralNetwork.run(inputs)
 
     def setFitness(self, fitness):
         self.fitness = fitness

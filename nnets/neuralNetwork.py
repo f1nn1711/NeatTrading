@@ -77,7 +77,7 @@ class NeuralNetwork:
                 fullFeedForward = True
                 for connection in relevantConnections:
                     # print(f'Node: {n1} Connection: {n2}')
-                    if (result := connection.feedForward()):
+                    if (result := connection.feedForward()) is not None:
                         feedForwardResults.append(result)
                     else:
                         fullFeedForward = False
@@ -93,7 +93,7 @@ class NeuralNetwork:
             gotAllResults = True
             networkOutput = []
             for node in self.outputNodes:
-                if (result := node.output):
+                if result := node.output:
                     networkOutput.append(result)
                 else:
                     gotAllResults = False

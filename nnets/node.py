@@ -7,10 +7,15 @@ class Node:
         self.isInput = isInput
         self.isOutput = isOutput
         self.activation = activationFunctions[activation]()
+
+        self.isConnected = False
     
         self.bias = (random.random()*2)-1  # This scales the bias to be between -1 and 1
 
         self.output = None
+
+    def connect(self):
+        self.isConnected = True
     
     def process(self, inputValues):
         summedValues = sum(inputValues) + self.bias
