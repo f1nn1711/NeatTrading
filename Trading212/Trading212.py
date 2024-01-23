@@ -42,7 +42,7 @@ class Trading212:
                 response = requests.put(f'{self.baseURL}{endpoint}', data=json.dumps(data), headers=headers)
 
         if response is None or response.status_code != 200:
-            raise ConnectionError('Error getting data from Trading 212')
+            raise ConnectionError(f'Error getting data from Trading 212, error: {response.status_code}')
 
         return response.json()
 
