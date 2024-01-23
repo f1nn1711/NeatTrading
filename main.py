@@ -1,24 +1,8 @@
 import sys
-from neat import NEAT
-import json
 from Trading212 import Trading212
 from DataProcessor import ProcessorV1
 import os
-
-
-def train():
-    print('Generating population')
-    with open('config.json', 'r') as file:
-        config = json.loads(file.read())
-
-    controller = NEAT(config)
-    # for each gen
-    #   for each agent
-    #       agent.getNetworkResponse(obs)
-    #       set the fitness of the agent
-    #   call generateEvolvedPopulation to set new population
-
-    return
+from TradeAlgo import TradeAlgorithm
 
 
 def getData(ticker):
@@ -36,6 +20,12 @@ def generateData(tickers):
     return
 
 
+def getDecision(tickers):
+    tradeAlgo = TradeAlgorithm(tickers)
+
+    return tradeAlgo.getResult()
+
+
 def main():
     arguments = sys.argv
 
@@ -43,14 +33,14 @@ def main():
         return
 
     match arguments[1]:
-        case 'train':
-            return train()
         case 'help':
             print('Enter an option to run that function, this was helpful.')
         case 'getData':
             return getData(arguments[2])
         case 'generateData':
             return generateData(arguments[2])
+        case 'getDecisions':
+            return getDecision(arguments[2].split(','))
         case _:
             print('Option not found')
 
