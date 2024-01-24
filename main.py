@@ -3,6 +3,7 @@ from Trading212 import Trading212
 from DataProcessor import ProcessorV1
 import os
 from TradeAlgo import TradeAlgorithm
+from MessageHandler import Messager
 
 
 def getData(ticker):
@@ -26,6 +27,16 @@ def getDecision(tickers):
     return tradeAlgo.getResult()
 
 
+def testMessager():
+    messageHandler = Messager()
+
+    messageHandler.enqueue('BUY/EURUSD', 'MessageQueue-dev.fifo')
+    messageHandler.enqueue('SELL/GBPCHF',  'MessageQueue-dev.fifo')
+    messageHandler.enqueue('this is a debug message', 'MessageQueue-dev.fifo')
+
+    return
+
+
 def main():
     arguments = sys.argv
 
@@ -41,6 +52,8 @@ def main():
             return generateData(arguments[2])
         case 'getDecisions':
             return getDecision(arguments[2].split(','))
+        case 'testMessage':
+            return testMessager()
         case _:
             print('Option not found')
 
