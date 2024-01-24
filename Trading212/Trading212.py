@@ -1,6 +1,7 @@
 import requests
 import json
-
+import gzip
+from .RawRequest import curl_request
 
 class Trading212:
     VALID_TIME_PERIODS = [
@@ -18,8 +19,9 @@ class Trading212:
 
     TICKER_SCHEMA = ['volume', 'open', 'high', 'low', 'close', 'trades']
 
-    def __init__(self, baseURL: str = 'https://live.trading212.com'):
+    def __init__(self, baseURL: str = 'https://live.trading212.com', useRawRequest: bool = False):
         self.baseURL = baseURL
+        self.useRawRequest = useRawRequest
 
     def getValidTimePeriods(self) -> list:
         return self.VALID_TIME_PERIODS
@@ -32,17 +34,27 @@ class Trading212:
             'Content-Type': 'application/json',
             'Accept': '*/*',
             'Host': 'live.trading212.com',
-            'User-Agent': 'PostmanRuntime/7.35.0',
-            'Accept-Encoding': 'gzip, deflate, br'
+            'User-Agent': 'curl/7.79.1',
+            # 'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://demo.trading212.com',
+            'Origin': 'https://demo.trading212.com',
+            'Accept-Encoding': 'gzip'
         }
 
         response = None
         match method:
             case 'PUT':
-                response = requests.put(f'{self.baseURL}{endpoint}', data=json.dumps(data), headers=headers)
+                if self.useRawRequest == True:
+                    response = curl_request(endpoint, data)
+                    if isinstance(response, list):
+                        return response
+                else:
+                    response = requests.put(f'{self.baseURL}{endpoint}', data=json.dumps(data), headers=headers)
+
 
         if response is None or response.status_code != 200:
             raise ConnectionError(f'Error getting data from Trading 212, error: {response.status_code}')
+
 
         return response.json()
 

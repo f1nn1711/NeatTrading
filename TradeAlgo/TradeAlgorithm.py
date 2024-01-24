@@ -8,7 +8,7 @@ import pandas_ta as pdTa
 class TradeAlgorithm:
     def __init__(self, tickers: [str]):
         self.tickers = tickers
-        self.processor = Processor(Trading212())
+        self.processor = Processor(Trading212(useRawRequest=True))
 
     def getTickers(self):
         return self.tickers
