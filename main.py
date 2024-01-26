@@ -4,6 +4,9 @@ from DataProcessor import ProcessorV1
 import os
 from TradeAlgo import TradeAlgorithm
 from MessageHandler import Messager
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def getData(ticker):

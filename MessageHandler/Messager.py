@@ -1,11 +1,16 @@
 import boto3
 import hashlib
 import time
+import os
 
 
 class Messager:
     def __init__(self, profile: str = 'personal'):
-        self.session = boto3.Session(profile_name=profile)
+        self.session = boto3.Session(
+            os.environ['AWS_ACCESS_KEY_ID'],
+            os.environ['AWS_SECRET_ACCESS_KEY'],
+            region_name=os.environ['AWS_REGION']
+        )
 
     def enqueue(self, message: str, queue: str, group: str = 'default'):
         client = self.session.client('sqs')

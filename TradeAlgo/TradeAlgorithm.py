@@ -94,8 +94,8 @@ class TradeAlgorithm:
         return results
 
     def getTickerResult(self, ticker: str, data: list) -> int:
-        if ticker == 'NZDUSD':
-            return 0
+        #if ticker == 'NZDUSD':
+        #    return 1
 
         df = pd.DataFrame.from_dict(data)
 
