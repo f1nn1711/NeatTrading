@@ -65,24 +65,31 @@ class TradeAlgorithm:
             tickerData.append(fetchedData[0]['response']['candles'])
 
         labeledData = [[self.processor.applyDataSchema(data) for data in ticker] for ticker in tickerData]
-        print(f'Processed data for: {ticker}')
+        print(f'Processed data in to analytic format')
 
         handler = MessageHandler.Messager()
+        print('Started the message handler')
         callsMade = []
         for ticker, data in zip(self.getTickers(), labeledData):
+            print(f'Getting result for: {ticker}')
             result = self.getTickerResult(ticker, data)
-
+            print(f'Got result {result} for {ticker}')
             if result == -1 and not checkIfCallExists(f'SELL/{ticker}'):
+                print(f'Making sell call for {ticker}')
                 handler.enqueue(f'SELL/{ticker}', 'MessageQueue-dev')
                 updateCurrentCalls(f'SELL/{ticker}')
+                print(f'Finished sell call for {ticker}')
                 continue
 
             if result == 1 and not checkIfCallExists(f'BUY/{ticker}'):
+                print(f'Making buy call for {ticker}')
                 handler.enqueue(f'BUY/{ticker}', 'MessageQueue-dev')
                 updateCurrentCalls(f'BUY/{ticker}')
+                print(f'Finished buy call for {ticker}')
                 continue
 
             if result == 0:
+                print('Checking if calls need to be removed')
                 if checkIfCallExists(f'BUY/{ticker}'):
                     removeCurrentCall(f'BUY/{ticker}')
                     continue
