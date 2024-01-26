@@ -90,12 +90,15 @@ class TradeAlgorithm:
 
             if result == 0:
                 print('Checking if calls need to be removed')
-                if checkIfCallExists(f'BUY/{ticker}'):
-                    removeCurrentCall(f'BUY/{ticker}')
-                    continue
+                try:
+                    if checkIfCallExists(f'BUY/{ticker}'):
+                        removeCurrentCall(f'BUY/{ticker}')
+                        continue
 
-                if checkIfCallExists(f'SELL/{ticker}'):
-                    removeCurrentCall(f'SELL/{ticker}')
+                    if checkIfCallExists(f'SELL/{ticker}'):
+                        removeCurrentCall(f'SELL/{ticker}')
+                except Exception as e:
+                    print(e)
 
         return results
 
