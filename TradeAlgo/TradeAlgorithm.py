@@ -5,11 +5,11 @@ import pandas as pd
 import pandas_ta as pdTa
 import MessageHandler
 import json
-
+import os
 
 
 def checkIfCallExists(callCode: str) -> bool:
-    with open('./TradeAlgo/data/currentCalls.json', 'r') as f:
+    with open(os.path.abspath('./TradeAlgo/data/currentCalls.json'), 'r') as f:
         currentCalls = json.loads(f.read())
         f.close()
 
@@ -20,11 +20,11 @@ def checkIfCallExists(callCode: str) -> bool:
 
 
 def updateCurrentCalls(callCode: str) -> None:
-    with open('./TradeAlgo/data/currentCalls.json', 'r') as f:
+    with open(os.path.abspath('./TradeAlgo/data/currentCalls.json'), 'r') as f:
         currentCalls = json.loads(f.read())
         f.close()
 
-    with open('./TradeAlgo/data/currentCalls.json', 'w') as f:
+    with open(os.path.abspath('./TradeAlgo/data/currentCalls.json'), 'w') as f:
         currentCalls['calls'].append(callCode)
 
         f.write(json.dumps(currentCalls))
