@@ -13,6 +13,7 @@ class Messager:
         )
 
     def enqueue(self, message: str, queue: str, group: str = 'default'):
+        print(f'Trying to send message: {message} to {queue}')
         client = self.session.client('sqs')
 
         response = client.list_queues(
@@ -28,6 +29,11 @@ class Messager:
             MessageGroupId=group,
             MessageDeduplicationId=hashlib.sha256(f'{message}{time.time()}'.encode()).hexdigest()
         )
+
+        try:
+            print(f'Sent message, status code: {response["ResponseMetadata"]["HTTPStatusCode"]}')
+        except:
+            print('Failed processing response')
 
         return response
 

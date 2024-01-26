@@ -51,13 +51,11 @@ class TradeAlgorithm:
         return self.tickers
 
     def getResult(self):
-        # help(pdTa.adx)
-        # help(pdTa.bbands)
-        # help(pdTa.rsi)
         results = []
 
         tickerData = []
         for ticker in self.getTickers():
+            print(f'Getting data for: {ticker}')
             fetchedData = self.processor.apiInstance.getTickerData(ticker, 'FIVE_MINUTES')
 
             if not isSet(fetchedData[0], 'response.candles'):
@@ -67,6 +65,7 @@ class TradeAlgorithm:
             tickerData.append(fetchedData[0]['response']['candles'])
 
         labeledData = [[self.processor.applyDataSchema(data) for data in ticker] for ticker in tickerData]
+        print(f'Processed data for: {ticker}')
 
         handler = MessageHandler.Messager()
         callsMade = []
