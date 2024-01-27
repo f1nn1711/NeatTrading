@@ -2,6 +2,7 @@ import boto3
 import hashlib
 import time
 import os
+import logging
 
 
 class Messager:
@@ -13,7 +14,7 @@ class Messager:
         )
 
     def enqueue(self, message: str, queue: str, group: str = 'default'):
-        print(f'Trying to send message: {message} to {queue}')
+        logging.info(f'Trying to send message: {message} to {queue}')
         client = self.session.client('sqs')
 
         response = client.list_queues(
@@ -23,17 +24,17 @@ class Messager:
         if len(response['QueueUrls']) != 1:
             raise ValueError(f'{len(response)} queues returned.')
 
-        response = client.send_message(
-            QueueUrl=response['QueueUrls'][0],
-            MessageBody=message,
-            MessageGroupId=group,
-            MessageDeduplicationId=hashlib.sha256(f'{message}{time.time()}'.encode()).hexdigest()
-        )
-
         try:
-            print(f'Sent message, status code: {response["ResponseMetadata"]["HTTPStatusCode"]}')
-        except:
-            print('Failed processing response')
+            response = client.send_message(
+                QueueUrl=response['QueueUrls'][0],
+                MessageBody=message,
+                MessageGroupId=group,
+                MessageDeduplicationId=hashlib.sha256(f'{message}{time.time()}'.encode()).hexdigest()
+            )
+
+            logging.info('Successfully sent message to SQS')
+        except Exception as e:
+            logging.error(f'Error sending message to SQS: {e}')
 
         return response
 

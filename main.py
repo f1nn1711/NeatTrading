@@ -5,6 +5,11 @@ import os
 from TradeAlgo import TradeAlgorithm
 from MessageHandler import Messager
 from dotenv import load_dotenv
+import logging
+import logging.config
+import yaml
+import time
+import watchtower
 
 load_dotenv()
 
@@ -12,7 +17,7 @@ load_dotenv()
 def getData(ticker):
     connection = Trading212()
     responseData = connection.getTickerData(ticker, 'TEN_MINUTES')
-    print(responseData)  # use 25 to 45 last periods
+    print(responseData)
 
     return
 
@@ -58,8 +63,18 @@ def main():
         case 'testMessage':
             return testMessager()
         case _:
-            print('Option not found')
+            logging.error(f'Option({arguments[1]}) not found.')
 
 
 if __name__ == '__main__':
+    with open('logging.yml') as log_config:
+        config_yml = log_config.read()
+        config_dict = yaml.safe_load(config_yml)
+        logging.config.dictConfig(config_dict)
+
+    logging.info('-----------Application Starting-----------')
+    startTime = time.time()
     main()
+    logging.info('-----------Application Finished-----------')
+    logging.info(f'Runtime: {round(time.time() - startTime, 2)}s')
+    logging.info('------------------------------------------')

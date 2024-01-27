@@ -1,0 +1,35 @@
+# Default AWS Config
+version: 1
+disable_existing_loggers: False
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    stream: ext://sys.stdout
+    formatter: standardFormat
+  logfile:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    filename: watchtower.log
+    maxBytes: 1000000
+    backupCount: 3
+    formatter: standardFormat
+  watchtower:
+    class: watchtower.CloudWatchLogHandler
+    level: DEBUG
+    log_group_name: watchtower
+    log_stream_name: "{logger_name}-{strftime:%y-%m-%d}"
+    send_interval: 10
+    create_log_group: False
+    boto3_profile_name: personal
+    formatter: standardFormat
+formatters:
+  standardFormat:
+    format: '%(levelname)s - %(message)s'
+root:
+  level: DEBUG
+  propagate: True
+  handlers: [console, logfile, watchtower]
+loggers:
+  botocore:
+    level: INFO

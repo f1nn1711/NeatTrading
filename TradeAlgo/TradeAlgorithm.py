@@ -6,39 +6,36 @@ import pandas_ta as pdTa
 import MessageHandler
 import json
 import os
+import logging
 
 
-def checkIfCallExists(callCode: str) -> bool:
-    with open(os.path.abspath('./TradeAlgo/data/currentCalls.json'), 'r') as f:
-        currentCalls = json.loads(f.read())
-        f.close()
-
-    if callCode in currentCalls['calls']:
-        return True
-
-    return False
+RESULT_VALUES = {
+    '-1': 'SELL',
+    '0': 'NA',
+    '1': 'BUY'
+}
 
 
-def updateCurrentCalls(callCode: str) -> None:
-    with open(os.path.abspath('./TradeAlgo/data/currentCalls.json'), 'r') as f:
-        currentCalls = json.loads(f.read())
-        f.close()
+def getCurrentCalls() -> list:
+    try:
+        with open(os.path.dirname(os.path.abspath(__file__)) + '/data/currentCalls.json', 'r') as f:
+            currentCalls = json.loads(f.read())
+            f.close()
+    except Exception as e:
+        logging.error(f'Unable to get current calls, error: {e}')
 
-    with open(os.path.abspath('./TradeAlgo/data/currentCalls.json'), 'w') as f:
-        currentCalls['calls'].append(callCode)
+        return []
 
-        f.write(json.dumps(currentCalls))
-        f.close()
+    return currentCalls['calls']
 
-def removeCurrentCall(callCode: str) -> None:
-    with open('./TradeAlgo/data/currentCalls.json', 'r') as f:
-        currentCalls = json.loads(f.read())
-        f.close()
 
-    with open('./TradeAlgo/data/currentCalls.json', 'w') as f:
-        currentCalls['calls'].remove(callCode)
+def setCurrentCalls(calls: list[str]) -> None:
+    with open(os.path.dirname(os.path.abspath(__file__)) + '/data/currentCalls.json', 'w') as f:
+        currentCallsData = {
+            'calls': [call for call in calls]
+        }
 
-        f.write(json.dumps(currentCalls))
+        f.write(json.dumps(currentCallsData))
         f.close()
 
 
@@ -55,57 +52,69 @@ class TradeAlgorithm:
 
         tickerData = []
         for ticker in self.getTickers():
-            print(f'Getting data for: {ticker}')
+            logging.info(f'Getting data for: {ticker}')
             fetchedData = self.processor.apiInstance.getTickerData(ticker, 'FIVE_MINUTES')
 
             if not isSet(fetchedData[0], 'response.candles'):
-                print(f'No data returned for: {ticker}')
+                logging.error(f'No data returned for: {ticker}, skipping')
                 continue
 
             tickerData.append(fetchedData[0]['response']['candles'])
 
-        labeledData = [[self.processor.applyDataSchema(data) for data in ticker] for ticker in tickerData]
-        print(f'Processed data in to analytic format')
+        try:
+            labeledData = [[self.processor.applyDataSchema(data) for data in ticker] for ticker in tickerData]
+            logging.info(f'Processed data in to analytic format')
+        except Exception as e:
+            logging.critical(f'Unable to process data in to usable format: {e}')
+            quit()
 
         handler = MessageHandler.Messager()
-        print('Started the message handler')
-        callsMade = []
+        currentCalls = getCurrentCalls()
         for ticker, data in zip(self.getTickers(), labeledData):
-            print(f'Getting result for: {ticker}')
             result = self.getTickerResult(ticker, data)
-            print(f'Got result {result} for {ticker}')
-            if result == -1 and not checkIfCallExists(f'SELL/{ticker}'):
-                print(f'Making sell call for {ticker}')
-                handler.enqueue(f'SELL/{ticker}', 'MessageQueue-dev')
-                updateCurrentCalls(f'SELL/{ticker}')
-                print(f'Finished sell call for {ticker}')
-                continue
-
-            if result == 1 and not checkIfCallExists(f'BUY/{ticker}'):
-                print(f'Making buy call for {ticker}')
-                handler.enqueue(f'BUY/{ticker}', 'MessageQueue-dev')
-                updateCurrentCalls(f'BUY/{ticker}')
-                print(f'Finished buy call for {ticker}')
-                continue
+            logging.info(f'Got result {result}({RESULT_VALUES[str(result)]}) for {ticker}')
 
             if result == 0:
-                print('Checking if calls need to be removed')
-                try:
-                    if checkIfCallExists(f'BUY/{ticker}'):
-                        removeCurrentCall(f'BUY/{ticker}')
+                filteredCalls = []
+                for call in currentCalls:
+                    if ticker in call:
                         continue
 
-                    if checkIfCallExists(f'SELL/{ticker}'):
-                        removeCurrentCall(f'SELL/{ticker}')
-                except Exception as e:
-                    print(e)
+                    filteredCalls.append(call)
+
+                currentCalls = filteredCalls
+
+            if result == -1 and f'SELL/{ticker}' not in currentCalls:
+                logging.info(f'Making sell call for {ticker}')
+
+                handler.enqueue(f'SELL/{ticker}', 'MessageQueue-dev')
+                currentCalls.append(f'SELL/{ticker}')
+
+                if f'BUY/{ticker}' in currentCalls:
+                    currentCalls.remove(f'BUY/{ticker}')
+
+                logging.info(f'Finished sell call for {ticker}')
+
+                continue
+
+            if result == 1 and f'BUY/{ticker}' not in currentCalls:
+                logging.info(f'Making buy call for {ticker}')
+
+                handler.enqueue(f'BUY/{ticker}', 'MessageQueue-dev')
+                currentCalls.append(f'BUY/{ticker}')
+
+                if f'SELL/{ticker}' in currentCalls:
+                    currentCalls.remove(f'SELL/{ticker}')
+
+                logging.info(f'Finished buy call for {ticker}')
+
+                continue
+
+        setCurrentCalls(currentCalls)
 
         return results
 
     def getTickerResult(self, ticker: str, data: list) -> int:
-        #if ticker == 'NZDUSD':
-        #    return 1
-
         df = pd.DataFrame.from_dict(data)
 
         strategy = pdTa.Strategy('Strategy v1', ta=[
