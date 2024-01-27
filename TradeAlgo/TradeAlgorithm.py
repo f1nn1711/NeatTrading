@@ -188,4 +188,4 @@ def handleTrade(
 
         return
 
-    messageHandler.enqueue(call, 'MessageQueue-dev')
+    messageHandler.enqueue(call, os.environ['SQS_QUEUE'])
