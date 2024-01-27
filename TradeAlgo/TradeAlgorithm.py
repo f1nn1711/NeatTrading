@@ -8,6 +8,11 @@ import json
 import os
 import logging
 
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from PyTrading212 import CFD, CFDOrder
+from PyTrading212 import Mode
+
 
 RESULT_VALUES = {
     '-1': 'SELL',
@@ -69,6 +74,7 @@ class TradeAlgorithm:
             quit()
 
         handler = MessageHandler.Messager()
+        tradeExecuter = TradeExecuter()
         currentCalls = getCurrentCalls()
         for ticker, data in zip(self.getTickers(), labeledData):
             result = self.getTickerResult(ticker, data)
@@ -87,7 +93,7 @@ class TradeAlgorithm:
             if result == -1 and f'SELL/{ticker}' not in currentCalls:
                 logging.info(f'Making sell call for {ticker}')
 
-                handler.enqueue(f'SELL/{ticker}', 'MessageQueue-dev')
+                handleTrade(f'SELL/{ticker}', handler, tradeExecuter)
                 currentCalls.append(f'SELL/{ticker}')
 
                 if f'BUY/{ticker}' in currentCalls:
@@ -100,7 +106,7 @@ class TradeAlgorithm:
             if result == 1 and f'BUY/{ticker}' not in currentCalls:
                 logging.info(f'Making buy call for {ticker}')
 
-                handler.enqueue(f'BUY/{ticker}', 'MessageQueue-dev')
+                handleTrade(f'BUY/{ticker}', handler, tradeExecuter)
                 currentCalls.append(f'BUY/{ticker}')
 
                 if f'SELL/{ticker}' in currentCalls:
@@ -109,6 +115,9 @@ class TradeAlgorithm:
                 logging.info(f'Finished buy call for {ticker}')
 
                 continue
+
+        if tradeExecuter.shouldExecute():
+            tradeExecuter.executeAll()
 
         setCurrentCalls(currentCalls)
 
@@ -143,3 +152,40 @@ class TradeAlgorithm:
         return 0
 
 
+class TradeExecuter:
+    def __init__(self):
+        self.calls = []
+
+    def addCall(self, call: str):
+        self.calls.append(call)
+
+    def shouldExecute(self):
+        return bool(self.calls)
+
+    def executeAll(self):
+        driver = webdriver.Chrome(service=Service())
+        cfd = CFD(email=os.environ['PLATFORM_EMAIL'], password=os.environ['PLATFORM_PASSWORD'], driver=driver, mode=Mode.DEMO)
+
+        for call in self.calls:
+            signal, ticker = call.split('/')
+            cfd_order = CFDOrder(
+                instrument_code=ticker,
+                quantity=-0.1,  # Sell (quantity is negative)
+                target_price=cfd.get_current_price(instrument_code=ticker)
+            )
+
+            print(cfd.execute_order(order=cfd_order))
+
+        return
+
+def handleTrade(
+        call: str,
+        messageHandler: MessageHandler.Messager | None = None,
+        tradeExecuter: TradeExecuter | None = None
+) -> None:
+    if os.environ['EXECUTE_TRADES'] == 'True':
+        tradeExecuter.addCall(call)
+
+        return
+
+    messageHandler.enqueue(call, 'MessageQueue-dev')
