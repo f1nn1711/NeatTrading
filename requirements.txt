@@ -24,3 +24,7 @@ tzdata==2023.4
 urllib3==2.0.7
 pyyaml==6.0.1
 watchtower==3.0.1
+pytz
+selenium
+requests
+rich
