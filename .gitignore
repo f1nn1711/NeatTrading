@@ -6,3 +6,11 @@
 .idea/misc.xml
 .idea/inspectionProfiles/profiles_settings.xml
 /.env
+watchtower.log
+/lambda/discordMessage/bin/
+/lambda/discordMessage/certifi/
+/lambda/discordMessage/charset_normalizer/
+/lambda/discordMessage/idna/
+/lambda/discordMessage/requests/
+/lambda/discordMessage/urllib3/
+.DS_Store
